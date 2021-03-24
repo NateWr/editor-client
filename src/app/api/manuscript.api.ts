@@ -14,6 +14,7 @@ import { createAbstractState, createImpactStatementState } from 'app/models/abst
 import { createBodyState } from 'app/models/body';
 import { createAcknowledgementsState } from 'app/models/acknowledgements';
 import { Change } from 'app/utils/history/change';
+import { ConfigState } from 'app/store';
 
 import { JSONObject } from 'app/types/utility.types';
 
@@ -36,8 +37,8 @@ const changesUrl = (id: string, page?: number): string => {
   return !isUndefined(page) ? `/api/v1/articles/${id}/changes?page=${page}` : `/api/v1/articles/${id}/changes`;
 };
 
-export async function getManuscriptContent(id: string): Promise<Manuscript> {
-  const { data } = await axios.get<string>(manuscriptUrl(id), { headers: { Accept: 'application/xml' } });
+export async function getManuscriptContent(url: string, id: string): Promise<Manuscript> {
+  const { data } = await axios.get<string>(url, { headers: { Accept: 'application/xml' } });
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(data, 'text/xml');
