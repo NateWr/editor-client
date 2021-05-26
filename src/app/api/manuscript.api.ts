@@ -24,20 +24,16 @@ interface ManuscriptChangesResponse {
   total: number;
 }
 
-const manuscriptUrl = (id: string): string => {
-  return `/api/v1/articles/${id}`;
-};
-
 const figureUploadUrl = (id: string): string => {
   return `/api/v1/articles/${id}/assets`;
 };
 
-const changesUrl = (id: string, page?: number): string => {
-  return !isUndefined(page) ? `/api/v1/articles/${id}/changes?page=${page}` : `/api/v1/articles/${id}/changes`;
+const changesUrl = (url: string, page?: number): string => {
+  return !isUndefined(page) ? `${url}?page=${page}` : url;
 };
 
-export async function getManuscriptContent(id: string): Promise<Manuscript> {
-  const { data } = await axios.get<string>(manuscriptUrl(id), { headers: { Accept: 'application/xml' } });
+export async function getManuscriptContent(url: string, id: string): Promise<Manuscript> {
+  const { data } = await axios.get<string>(url, { headers: { Accept: 'application/xml' } });
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(data, 'text/xml');
@@ -73,18 +69,18 @@ export async function getManuscriptContent(id: string): Promise<Manuscript> {
   } as Manuscript;
 }
 
-export function syncChanges(id: string, changes: Change[]): Promise<void> {
-  return axios.post(changesUrl(id), { changes });
+export function syncChanges(url: string, changes: Change[], config: any): Promise<void> {
+  return axios.post(url, { changes }, config ?? {});
 }
 
-export async function getManuscriptChanges(id: string): Promise<JSONObject[]> {
-  const { data } = await axios.get<ManuscriptChangesResponse>(changesUrl(id, 0));
+export async function getManuscriptChanges(url: string): Promise<JSONObject[]> {
+  const { data } = await axios.get<ManuscriptChangesResponse>(changesUrl(url, 0));
   const pagesRemaining = Math.ceil((data.total - data.changes.length) / RECORDS_PER_PAGE);
 
   const remainingPages = await Promise.all(
     Array(pagesRemaining)
       .fill(undefined)
-      .map((_, index) => axios.get<ManuscriptChangesResponse>(changesUrl(id, index + 1)))
+      .map((_, index) => axios.get<ManuscriptChangesResponse>(changesUrl(url, index + 1)))
   );
 
   return remainingPages.reduce((acc, response) => [...acc, ...response.data.changes], data.changes);

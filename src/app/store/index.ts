@@ -26,14 +26,29 @@ export interface ManuscriptEditorState {
   };
 }
 
+export interface ConfigState {
+  manuscriptUrl: string;
+  figureUploadUrl: string;
+  changesUrl: string;
+  id: string;
+  csrfToken: string;
+  returnUrl: string;
+  toc: Array<any>;
+  enabledEditorParts: Array<string>;
+}
+
 export interface ApplicationState {
+  config: ConfigState;
   manuscript: ManuscriptHistoryState;
   manuscriptEditor: ManuscriptEditorState;
 }
 
+declare var LIBERO_CONFIG: any;
+
 export const store = createStore(
   combineReducers({
     router: connectRouter(history),
+    config: () => LIBERO_CONFIG ?? {},
     manuscript: manuscriptReducer,
     manuscriptEditor: manuscriptEditorReducer
   }),

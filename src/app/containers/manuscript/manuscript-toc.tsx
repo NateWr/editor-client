@@ -9,6 +9,7 @@ import { ClearFocus } from 'app/containers/manuscript/clear-focus';
 import { getManuscriptBodyTOC } from 'app/selectors/manuscript-editor.selectors';
 import { TableOfContents, TOCEntry } from 'app/types/manuscript';
 import { scrollIntoViewAction } from 'app/actions/manuscript-editor.actions';
+import { getConfigState } from 'app/selectors/config.selectors';
 
 export interface ManuscriptTOCProps {
   tocOpen: boolean;
@@ -23,19 +24,12 @@ export const ManuscriptTOC: React.FC<ManuscriptTOCProps> = (props) => {
   const articleInfo = useSelector(getArticleInformation);
   const journalMeta = useSelector(getJournalMeta);
   const manuscriptBodyTOC = useSelector(getManuscriptBodyTOC);
-  const toc: TableOfContents = [
-    { level: 1, title: 'Title', id: 'title' },
-    { level: 1, title: 'Authors', id: 'authors' },
-    { level: 1, title: 'Affiliations', id: 'affiliations' },
-    { level: 1, title: 'Abstract', id: 'abstract' },
-    { level: 1, title: 'Impact statement', id: 'impactStatement' },
-    ...manuscriptBodyTOC,
-    { level: 1, title: 'Acknowledgements', id: 'acknowledgements' },
-    { level: 1, title: 'References', id: 'references' },
-    { level: 1, title: 'Author information', id: 'author-details' },
-    { level: 1, title: 'Article information', id: 'article-info' },
-    { level: 1, title: 'Related articles', id: 'realted-acticles' }
-  ];
+  const config = useSelector(getConfigState);
+  let toc = config.toc;
+  const bodyIndex = toc.findIndex(item => item.id === 'body');
+  if (bodyIndex !== -1 && manuscriptBodyTOC.length) {
+    toc.splice(bodyIndex, 1, ...manuscriptBodyTOC);
+  }
 
   const handleTOCClick = useCallback(
     (entry: TOCEntry) => () => {

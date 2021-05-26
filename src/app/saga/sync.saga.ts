@@ -7,6 +7,8 @@ import { getChangesMadeBetween } from 'app/selectors/manuscript.selectors';
 import { setLastSyncFailed, setLastSyncTimestamp } from 'app/actions/manuscript-editor.actions';
 import { syncChanges } from 'app/api/manuscript.api';
 import { Change } from 'app/utils/history/change';
+import { ConfigState } from 'app/store';
+import { getConfigState } from 'app/selectors/config.selectors';
 
 const SYNC_INTERVAL = 2000;
 
@@ -22,15 +24,18 @@ function createPollingEventChannel(delay: number) {
 
 export function* watchChangesSaga() {
   const channel = yield call(createPollingEventChannel, SYNC_INTERVAL);
+  const configState: ConfigState = yield select(getConfigState);
   yield takeEvery(channel, function* () {
     const now = Date.now();
     const lastSyncTimeStamp = yield select(getLastSyncTimestamp);
     const changesSelector = yield select(getChangesMadeBetween);
     const changes: Change[] = changesSelector(lastSyncTimeStamp, now);
     if (changes.length > 0) {
-      const manuscriptId = yield select(getManuscriptId);
+      const requestConfig = configState.csrfToken
+        ? { headers: { 'X-Csrf-Token': configState.csrfToken }}
+        : {};
       try {
-        yield call(syncChanges, manuscriptId, changes);
+        yield call(syncChanges, configState.changesUrl, changes, requestConfig);
         yield put(setLastSyncTimestamp(now));
       } catch (e) {
         yield put(setLastSyncFailed());

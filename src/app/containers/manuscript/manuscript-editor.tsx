@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { EditorState, Transaction } from 'prosemirror-state';
+import { getConfigState } from 'app/selectors/config.selectors';
 
 import {
   getAbstract,
@@ -136,74 +137,113 @@ export const ManuscriptEditor: React.FC = () => {
     });
   };
 
+  const config = useSelector(getConfigState);
+  const enabledEditorParts = config.enabledEditorParts;
+
   return (
     <div onClick={clearFocus} className={classes.contentWrapper} data-test-id="container-wrapper">
       <div aria-hidden="true" className={classes.toolbarPlaceholder} />
       <div className={classes.content}>
-        <RichTextEditor
-          editorState={title}
-          label="Title"
-          id="title"
-          isActive={isInputFocused('title', focusedPath)}
-          name="title"
-          onChange={handleTitleChange}
-          onFocus={handleFocusSwitch}
-        />
+        {enabledEditorParts.includes('title') ? (
+          <RichTextEditor
+            editorState={title}
+            label="Title"
+            id="title"
+            isActive={isInputFocused('title', focusedPath)}
+            name="title"
+            onChange={handleTitleChange}
+            onFocus={handleFocusSwitch}
+          />
+        ) : undefined}
+        {enabledEditorParts.includes('authors') ? (
+          <ClearFocus>
+            <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
+            <SortableAuthorsList id="authors" />
+            <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
+            <AffiliationsList id="affiliations" />
+            <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
+          </ClearFocus>
+        ) : undefined}
+        {enabledEditorParts.includes('abstract') ? (
+          <RichTextEditor
+            editorState={abstract}
+            label="Abstract"
+            id="abstract"
+            name="abstract"
+            isActive={isInputFocused('abstract', focusedPath)}
+            onChange={handleAbstractChange}
+            onFocus={handleFocusSwitch}
+          />
+        ) : undefined}
+        {enabledEditorParts.includes('impactStatement') ? (
+          <ClearFocus>
+            <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
+            <RichTextEditor
+              editorState={impactStatement}
+              label="Impact statement"
+              id="impactStatement"
+              name="impactStatement"
+              isActive={isInputFocused('impactStatement', focusedPath)}
+              onChange={handleImpactStatementChange}
+              onFocus={handleFocusSwitch}
+            />
+          </ClearFocus>
+        ) : undefined}
+        {enabledEditorParts.includes('body') ? (
+          <ClearFocus>
+            <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
+            <RichTextEditor
+              editorState={body}
+              label="Main text"
+              name="body"
+              isActive={isInputFocused('body', focusedPath)}
+              onChange={handleBodyChange}
+              onFocus={handleFocusSwitch}
+            />
+          </ClearFocus>
+        ) : undefined}
+        {enabledEditorParts.includes('acknowledgements') ? (
+          <ClearFocus>
+            <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
+            <RichTextEditor
+              editorState={acknowledgements}
+              label="Acknowledgements"
+              id="acknowledgements"
+              name="acknowledgements"
+              isActive={isInputFocused('acknowledgements', focusedPath)}
+              onChange={handleAcknowledgementsChange}
+              onFocus={handleFocusSwitch}
+            />
+          </ClearFocus>
+        ) : undefined}
+        <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
         <ClearFocus>
-          <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
-          <SortableAuthorsList id="authors" />
-          <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
-          <AffiliationsList id="affiliations" />
-          <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
-        </ClearFocus>
-        <RichTextEditor
-          editorState={abstract}
-          label="Abstract"
-          id="abstract"
-          name="abstract"
-          isActive={isInputFocused('abstract', focusedPath)}
-          onChange={handleAbstractChange}
-          onFocus={handleFocusSwitch}
-        />
-        <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
-        <RichTextEditor
-          editorState={impactStatement}
-          label="Impact statement"
-          id="impactStatement"
-          name="impactStatement"
-          isActive={isInputFocused('impactStatement', focusedPath)}
-          onChange={handleImpactStatementChange}
-          onFocus={handleFocusSwitch}
-        />
-        <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
-        <RichTextEditor
-          editorState={body}
-          label="Main text"
-          name="body"
-          isActive={isInputFocused('body', focusedPath)}
-          onChange={handleBodyChange}
-          onFocus={handleFocusSwitch}
-        />
-        <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
-        <RichTextEditor
-          editorState={acknowledgements}
-          label="Acknowledgements"
-          id="acknowledgements"
-          name="acknowledgements"
-          isActive={isInputFocused('acknowledgements', focusedPath)}
-          onChange={handleAcknowledgementsChange}
-          onFocus={handleFocusSwitch}
-        />
-        <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
-        <ClearFocus>
-          <ReferenceList id="references" />
-          <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
-          <AuthorsInfoDetails id="author-details" />
-          <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
-          <ArticleInformation id="article-info" />
-          <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
-          {renderKeywords(allKeywords)}
-          <RelatedArticles id="realted-acticles" />
+          {enabledEditorParts.includes('references') ? (
+            <ReferenceList id="references" />
+          ) : undefined}
+          {enabledEditorParts.includes('authorDetails') ? (
+            <ClearFocus>
+              <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
+              <AuthorsInfoDetails id="author-details" />
+            </ClearFocus>
+          ) : undefined}
+          {enabledEditorParts.includes('articleInfo') ? (
+            <ClearFocus>
+              <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
+              <ArticleInformation id="article-info" />
+            </ClearFocus>
+          ) : undefined}
+          {enabledEditorParts.includes('keywords') ? (
+            <ClearFocus>
+              <div aria-hidden="true" className={classes.spacer} onClick={clearFocus} />
+              {renderKeywords(allKeywords)}
+            </ClearFocus>
+          ) : undefined}
+          {enabledEditorParts.includes('relatedArticles') ? (
+            <ClearFocus>
+              <RelatedArticles id="realted-acticles" />
+            </ClearFocus>
+          ) : undefined}
         </ClearFocus>
       </div>
     </div>

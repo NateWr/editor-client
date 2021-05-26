@@ -10,6 +10,7 @@ import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import LinkIcon from '@material-ui/icons/Link';
 import MenuIcon from '@material-ui/icons/Menu';
 import classNames from 'classnames';
+import { getConfigState } from 'app/selectors/config.selectors';
 
 import { DropDownMenu } from 'app/components/drop-down-menu';
 import * as manuscriptActions from 'app/actions/manuscript.actions';
@@ -117,6 +118,9 @@ export const ManuscriptToolbar: React.FC<ManuscriptToolbarProps> = (props) => {
     },
     [dispatch]
   );
+
+  const config = useSelector(getConfigState);
+  const returnUrl = config.returnUrl;
 
   const renderContent = (): JSX.Element => (
     <AppBar color="inherit" position="fixed" className={classes.appBar}>
@@ -231,6 +235,10 @@ export const ManuscriptToolbar: React.FC<ManuscriptToolbarProps> = (props) => {
             { title: 'File Citation', enabled: false, action: undefined }
           ]}
         />
+        <div className={classes.spacer}></div>
+        {returnUrl ? (
+          <a className="returnLink" href={returnUrl}>Back to Submission</a>
+        ) : undefined}
         <div className={classes.spacer}></div>
         {lastSyncTs || !lastSyncSuccessulf ? (
           <div className={classNames(classes.toolbarMessage, { error: !lastSyncSuccessulf })}>

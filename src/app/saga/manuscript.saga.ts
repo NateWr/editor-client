@@ -1,10 +1,12 @@
-import { all, takeLatest, call, put } from 'redux-saga/effects';
+import { all, takeLatest, call, put, select } from 'redux-saga/effects';
 
 import * as manuscriptActions from 'app/actions/manuscript.actions';
 import * as manuscriptEditorActions from 'app/actions/manuscript-editor.actions';
 import { Action } from 'app/utils/action.utils';
 import { getManuscriptChanges, getManuscriptContent } from 'app/api/manuscript.api';
 import { applyChangesFromServer } from 'app/utils/changes.utils';
+import { ConfigState } from 'app/store';
+import { getConfigState } from 'app/selectors/config.selectors';
 
 /**
  * Side effect handler to load the specified article from the backend.
@@ -14,10 +16,11 @@ import { applyChangesFromServer } from 'app/utils/changes.utils';
  */
 export function* loadManuscriptSaga(action: Action<string>) {
   const id = action.payload;
+  const configState: ConfigState = yield select(getConfigState);
   try {
-    let manuscript = yield call(getManuscriptContent, id);
+    let manuscript = yield call(getManuscriptContent, configState.manuscriptUrl, configState.id);
     try {
-      const changesJson = yield call(getManuscriptChanges, id);
+      const changesJson = yield call(getManuscriptChanges, configState.changesUrl);
       manuscript = applyChangesFromServer(manuscript, changesJson);
     } catch (e) {
       console.error('Loading changes failed', e);
